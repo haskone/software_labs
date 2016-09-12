@@ -34,11 +34,12 @@ def gen_seq(start, func, length):
 
 def gen_plots():
     seq_a = gen_seq(0.001, gen_a, 100)
-    seq_b = gen_seq((0.01, 0.01), gen_b, 100)
-    seq_c = gen_seq((0.01, 0.01), gen_c, 100)
+    seq_b = gen_seq((0.01, 0.1), gen_b, 100)
+    seq_c = gen_seq((0.01, 0.1), gen_c, 100)
 
-    print(seq_a)
-    plt.plot(np.arange(len(seq_a)), seq_a, 'r--')
+    plt.plot(np.arange(len(seq_a)), seq_a, 'r--',
+             np.arange(len(seq_b)), [t[0] for t in seq_b], 'bs',
+             np.arange(len(seq_c)), [t[0] for t in seq_c], 'g^')
     plt.show()
 
 gen_plots()
