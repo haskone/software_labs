@@ -32,14 +32,35 @@ def gen_seq(start, func, length):
     return seq
 
 
-def gen_plots():
+def gen_plots(seq_a, seq_b_x, seq_c_x):
+    plt.plot(np.arange(len(seq_a)), seq_a, 'r--',
+             np.arange(len(seq_b)), seq_b_x, 'bs',
+             np.arange(len(seq_c)), seq_c_x, 'g^')
+    plt.show()
+
+
+def make_it_bin(seq, border=0.5):
+    return [1 if item > border else
+            0 for item in seq]
+
+
+def gen_seqs():
     seq_a = gen_seq(0.001, gen_a, 100)
     seq_b = gen_seq((0.01, 0.1), gen_b, 100)
     seq_c = gen_seq((0.01, 0.1), gen_c, 100)
 
-    plt.plot(np.arange(len(seq_a)), seq_a, 'r--',
-             np.arange(len(seq_b)), [t[0] for t in seq_b], 'bs',
-             np.arange(len(seq_c)), [t[0] for t in seq_c], 'g^')
-    plt.show()
+    return seq_a, seq_b, seq_c
 
-gen_plots()
+if __name__ == '__main__':
+    seq_a, seq_b, seq_c = gen_seqs()
+    print('a: ', seq_a)
+    print('b: ', seq_b)
+    print('c: ', seq_c)
+
+    seq_b_x = [t[0] for t in seq_b]
+    seq_c_x = [t[0] for t in seq_c]
+    print('bin a: ', make_it_bin(seq_a))
+    print('bin b: ', make_it_bin(seq_b_x))
+    print('bin c: ', make_it_bin(seq_c_x))
+
+    gen_plots(seq_a, seq_b_x, seq_c_x)
