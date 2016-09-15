@@ -32,35 +32,84 @@ def gen_seq(start, func, length):
     return seq
 
 
-def gen_plots(seq_a, seq_b_x, seq_c_x):
-    plt.plot(np.arange(len(seq_a)), seq_a, 'r--',
-             np.arange(len(seq_b)), seq_b_x, 'bs',
-             np.arange(len(seq_c)), seq_c_x, 'g^')
-    plt.show()
-
-
 def make_it_bin(seq, border=0.5):
     return [1 if item > border else
             0 for item in seq]
 
 
-def gen_seqs():
-    seq_a = gen_seq(0.001, gen_a, 100)
-    seq_b = gen_seq((0.01, 0.1), gen_b, 100)
-    seq_c = gen_seq((0.01, 0.1), gen_c, 100)
+def gen_sub_seq_item(v, n, seq):
+    s_n = 0
+    for v_index in range(1, v + 1):
+        s_n += np.power(2, v - v_index) * seq[v_index * n - v_index + 1]
+    return s_n
 
-    return seq_a, seq_b, seq_c
+
+def gen_sub_seq(seq_bin, v_seq):
+    v_map = {}
+    for v in v_seq:
+        n_seq = range(1, round(len(seq_bin) / v))
+        seq_a_sub = []
+        for n in n_seq:
+            seq_a_sub.append(gen_sub_seq_item(v, n, seq_bin))
+        v_map[v] = seq_a_sub
+    return v_map
+
+
+def get_prob(sub_seq):
+    prob_v_map = {}
+    for v, seq in sub_seq.items():
+        prob_map = {}
+        l_seq = len(seq)
+        for item in set(seq):
+            prob_map[item] = seq.count(item) / l_seq
+        prob_v_map[v] = prob_map
+    return prob_v_map
+
+
+def get_shannon(probs_map):
+    res = 0
+    for item in probs_map.values():
+        res += item * np.log2(item)
+    return -1 * res
+
+
+def get_renyi(probs_map, b):
+    res = 0
+    for item in probs_map.values():
+        res += np.power(item, b)
+    return -1 * np.log2(res) * (1 / (b - 1))
+
+
+def gen_plots(seqs, labels):
+    lines = []
+    for plot in zip(seqs, labels):
+        line, = plt.plot(np.arange(len(plot[0])), plot[0], label=plot[1])
+        lines.append(line)
+    plt.legend(lines, labels, bbox_to_anchor=(1, 0.5))
+    plt.show()
+
 
 if __name__ == '__main__':
-    seq_a, seq_b, seq_c = gen_seqs()
-    print('a: ', seq_a)
-    print('b: ', seq_b)
-    print('c: ', seq_c)
 
-    seq_b_x = [t[0] for t in seq_b]
-    seq_c_x = [t[0] for t in seq_c]
-    print('bin a: ', make_it_bin(seq_a))
-    print('bin b: ', make_it_bin(seq_b_x))
-    print('bin c: ', make_it_bin(seq_c_x))
+    seq_chose = gen_seq(0.5, gen_a, 10000)
+    seq_bin = make_it_bin(seq_chose)
+    seq_sub = gen_sub_seq(seq_bin, v_seq=range(2, 21))
+    probs_map = get_prob(seq_sub)
 
-    gen_plots(seq_a, seq_b_x, seq_c_x)
+    entropy_set = []
+    renyi_full_2 = []
+    for prob in probs_map.values():
+        renyi_full_2.append(get_renyi(prob, 2))
+    entropy_set.append(renyi_full_2)
+
+    renyi_full_3 = []
+    for prob in probs_map.values():
+        renyi_full_3.append(get_renyi(prob, 3))
+    entropy_set.append(renyi_full_3)
+
+    shannon_full = []
+    for prob in probs_map.values():
+        shannon_full.append(get_shannon(prob))
+    entropy_set.append(shannon_full)
+
+    gen_plots(entropy_set, ['renyi_2', 'renyi_3', 'shannon'])
